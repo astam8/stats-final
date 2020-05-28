@@ -56,8 +56,6 @@ def summary(data):
     n = data.shape[1]
     return (xbar, ybar, sx, sy, r, n)
 
-REF_XBAR, REF_YBAR, REF_SX, REF_SY, REF_R, REF_N = summary(REFERENCE)
-
 # Fix mean and standard deviation of a list of data
 def fix_stats(data, mean, std):
     data = (data - np.mean(data)) / np.std(data)
@@ -168,35 +166,38 @@ def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd):
 
     return new_population
 
-def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd):
-    population = [replicate_statistics(REFERENCE)]
+def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd, measures_to_run, ref_distribution):
+    all_populations = [[ref_distribution]]
+    population = [replicate_statistics(ref_distribution) for i in range(population_size)]
+    for diff_measure in measures_to_run:
+        print('––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff_measure)
+        for i in range(iterations):
+            print('Iteration', i)
+            population = genetic_step(population, partial(diff_measure, ref_distribution), p_crossover, p_mutation, mutation_sd)
+            population = [fit_summary_statistics_of_to(gene, ref_distribution) for gene in population]
+
+        population.sort(key=partial(diff_measure, ref_distribution), reverse=True)
+        all_populations.append(population)
+
+        print('reference summary:', summary(ref_distribution))
+        print('leading distribution summary:', summary(population[0]))
+        print('leading distribution:', population[0])
+
+    return all_populations
+
+if __name__ == '__main__':
+    measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
+    populations = run_genetic(args.iterations, args.population, args.pcrossover, args.pmutation, args.mutationsd,
+        measures_to_test, REFERENCE)
+    
 
 # Plotting
 fig = plt.figure()
 
-all_populations = [[REFERENCE]]
-
-measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
-
-for diff in measures_to_test:
-    population = [replicate_statistics(REFERENCE) for i in range(args.population)]
-    population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
-    print('––––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff)
-    for i in range(args.iterations):
-        print(i)
-        population = genetic_step(population, partial(diff, REFERENCE), args.pcrossover, args.pmutation, args.mutationsd)
-        # Stat fix
-        population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
-    
-    population.sort(key=partial(diff, REFERENCE), reverse=True)
-    all_populations.append(population)
-    print('leading distribution summary:', summary(population[0]))
-    print('leading distribution:', population[0])
-    print('reference:', summary(REFERENCE))
-
 for i in range(len(measures_to_test) + 1):
     ax = plt.subplot(2, 3, i + 1)
-    ax.scatter(all_populations[i][0][0], all_populations[i][0][1], s=5)
+    ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
+    print(populations[i][0])
 
 plt.ioff()
 plt.show()
