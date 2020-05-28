@@ -31,6 +31,8 @@ parser.add_argument('-m', '--pmutation', type=int, default=DEFAULT_PMUTATION,
     help='probability of mutation for genetic algorithm')
 parser.add_argument('-s', '--mutationsd', type=int, default=DEFAULT_MUTATIONSD,
     help='standard deviation of normal distribution for mutations for genetic algorithm')
+parser.add_argument('-v', '--verbose', default=False,
+    help='print statements while running genetic algorithm', action='store_true')
 
 args = parser.parse_args()
 
@@ -130,7 +132,8 @@ def mutate(data, p_mutation, mutation_sd):
 def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd):
     # Calculate fitnesses
     fitnesses = [fitness(gene) for gene in population]
-    print(max(fitnesses))
+    if verbose:
+        print(max(fitnesses))
     sum_fitness = sum(fitnesses)
     fitnesses_distribution = [x / sum_fitness for x in fitnesses]
 
@@ -170,22 +173,27 @@ def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_s
     all_populations = [[ref_distribution]]
     population = [replicate_statistics(ref_distribution) for i in range(population_size)]
     for diff_measure in measures_to_run:
-        print('––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff_measure)
+        if verbose:
+            print('––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff_measure)
+
         for i in range(iterations):
-            print('Iteration', i)
+            if verbose:
+                print('Iteration', i)
             population = genetic_step(population, partial(diff_measure, ref_distribution), p_crossover, p_mutation, mutation_sd)
             population = [fit_summary_statistics_of_to(gene, ref_distribution) for gene in population]
 
         population.sort(key=partial(diff_measure, ref_distribution), reverse=True)
         all_populations.append(population)
 
-        print('reference summary:', summary(ref_distribution))
-        print('leading distribution summary:', summary(population[0]))
-        print('leading distribution:', population[0])
+        if verbose:
+            print('reference summary:', summary(ref_distribution))
+            print('leading distribution summary:', summary(population[0]))
+            print('leading distribution:', population[0])
 
     return all_populations
 
 if __name__ == '__main__':
+    verbose = args.verbose
     measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
     populations = run_genetic(args.iterations, args.population, args.pcrossover, args.pmutation, args.mutationsd,
         measures_to_test, REFERENCE)
@@ -199,3 +207,5 @@ if __name__ == '__main__':
 
     plt.ioff()
     plt.show()
+else:
+    verbose = False
