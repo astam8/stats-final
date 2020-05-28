@@ -18,24 +18,6 @@ DEFAULT_PMUTATION = 0.01
 # Default standard deviation for mutations for the genetic algorithm; increasing will increase the likelihood of large mutations
 DEFAULT_MUTATIONSD = 0.25
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('filename', help='specify the filename to read data from')
-parser.add_argument('-i', '--iterations', type=int, default=DEFAULT_ITERATIONS,
-    help='the number of iterations to run each genetic algorithm')
-parser.add_argument('-p', '--population', type=int, default=DEFAULT_POPSIZE,
-    help='size of population of genes for genetic algorithm')
-parser.add_argument('-c', '--pcrossover', type=int, default=DEFAULT_PCROSSOVER,
-    help='probability of crossover for genetic algorithm')
-parser.add_argument('-m', '--pmutation', type=int, default=DEFAULT_PMUTATION,
-    help='probability of mutation for genetic algorithm')
-parser.add_argument('-s', '--mutationsd', type=int, default=DEFAULT_MUTATIONSD,
-    help='standard deviation of normal distribution for mutations for genetic algorithm')
-parser.add_argument('-v', '--verbose', default=False,
-    help='print statements while running genetic algorithm', action='store_true')
-
-args = parser.parse_args()
-
 def load_data(filename):
     with open(filename, 'r') as fin:
         lines = fin.read().split('\n')
@@ -44,8 +26,6 @@ def load_data(filename):
         y = [float(val) for val in y]
         
     return np.array([x, y])
-
-REFERENCE = load_data(args.filename)
 
 # Get summary statistics of a list of data
 def summary(data):
@@ -129,7 +109,7 @@ def mutate(data, p_mutation, mutation_sd):
     else:
         return data
 
-def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd):
+def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd, verbose=False):
     # Calculate fitnesses
     fitnesses = [fitness(gene) for gene in population]
     if verbose:
@@ -169,7 +149,7 @@ def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd):
 
     return new_population
 
-def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd, measures_to_run, ref_distribution):
+def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd, measures_to_run, ref_distribution, verbose=False):
     all_populations = [[ref_distribution]]
     population = [replicate_statistics(ref_distribution) for i in range(population_size)]
     for diff_measure in measures_to_run:
@@ -179,7 +159,7 @@ def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_s
         for i in range(iterations):
             if verbose:
                 print('Iteration', i)
-            population = genetic_step(population, partial(diff_measure, ref_distribution), p_crossover, p_mutation, mutation_sd)
+            population = genetic_step(population, partial(diff_measure, ref_distribution), p_crossover, p_mutation, mutation_sd, verbose=verbose)
             population = [fit_summary_statistics_of_to(gene, ref_distribution) for gene in population]
 
         population.sort(key=partial(diff_measure, ref_distribution), reverse=True)
@@ -192,20 +172,44 @@ def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_s
 
     return all_populations
 
-if __name__ == '__main__':
-    verbose = args.verbose
-    measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
-    populations = run_genetic(args.iterations, args.population, args.pcrossover, args.pmutation, args.mutationsd,
-        measures_to_test, REFERENCE)
+def main(iterations, population_size, p_crossover, p_mutation, mutation_sd, ref_distribution,
+    measures_to_test=(ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff), verbose=False, plot=False):
+
+    populations = run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd,
+        measures_to_test, ref_distribution, verbose=verbose)
     
+    if plot:
     # Plotting
-    fig = plt.figure()
+        fig = plt.figure()
 
-    for i in range(len(populations)):
-        ax = plt.subplot(2, 3, i + 1)
-        ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
+        for i in range(len(populations)):
+            ax = plt.subplot(2, 3, i + 1)
+            ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
 
-    plt.ioff()
-    plt.show()
-else:
-    verbose = False
+        plt.ioff()
+        plt.show()
+
+def run():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', help='specify the filename to read data from')
+    parser.add_argument('-i', '--iterations', type=int, default=DEFAULT_ITERATIONS,
+        help='the number of iterations to run each genetic algorithm')
+    parser.add_argument('-p', '--population', type=int, default=DEFAULT_POPSIZE,
+        help='size of population of genes for genetic algorithm')
+    parser.add_argument('-c', '--pcrossover', type=int, default=DEFAULT_PCROSSOVER,
+        help='probability of crossover for genetic algorithm')
+    parser.add_argument('-m', '--pmutation', type=int, default=DEFAULT_PMUTATION,
+        help='probability of mutation for genetic algorithm')
+    parser.add_argument('-s', '--mutationsd', type=int, default=DEFAULT_MUTATIONSD,
+        help='standard deviation of normal distribution for mutations for genetic algorithm')
+    parser.add_argument('-v', '--verbose', default=False,
+        help='print statements while running genetic algorithm', action='store_true')
+
+    args = parser.parse_args()
+
+    REFERENCE = load_data(args.filename)
+    main(args.iterations, args.population, args.pcrossover, args.pmutation, args.mutationsd,
+        REFERENCE, verbose=args.verbose, plot=True)
+
+if __name__ == '__main__':
+    run()
