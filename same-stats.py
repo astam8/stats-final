@@ -20,7 +20,6 @@ parser.add_argument('-p', '--population', type=int, default=DEFAULT_POPSIZE,
 
 
 args = parser.parse_args()
-print(args.filename, args.iterations, args.population)
 
 def load_data(filename):
     with open(filename, 'r') as fin:
