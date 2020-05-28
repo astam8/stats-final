@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # Plotting
     fig = plt.figure()
 
-    for i in range(len(measures_to_test) + 1):
+    for i in range(len(populations)):
         ax = plt.subplot(2, 3, i + 1)
         ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
 
