@@ -190,14 +190,13 @@ if __name__ == '__main__':
     populations = run_genetic(args.iterations, args.population, args.pcrossover, args.pmutation, args.mutationsd,
         measures_to_test, REFERENCE)
     
+    # Plotting
+    fig = plt.figure()
 
-# Plotting
-fig = plt.figure()
+    for i in range(len(measures_to_test) + 1):
+        ax = plt.subplot(2, 3, i + 1)
+        ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
+        print(populations[i][0])
 
-for i in range(len(measures_to_test) + 1):
-    ax = plt.subplot(2, 3, i + 1)
-    ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
-    print(populations[i][0])
-
-plt.ioff()
-plt.show()
+    plt.ioff()
+    plt.show()
