@@ -196,7 +196,6 @@ if __name__ == '__main__':
     for i in range(len(measures_to_test) + 1):
         ax = plt.subplot(2, 3, i + 1)
         ax.scatter(populations[i][0][0], populations[i][0][1], s=5)
-        print(populations[i][0])
 
     plt.ioff()
     plt.show()
