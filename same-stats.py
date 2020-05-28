@@ -168,27 +168,30 @@ def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd):
 
     return new_population
 
+def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd):
+    population = [replicate_statistics(REFERENCE)]
+
 # Plotting
 fig = plt.figure()
 
 all_populations = [[REFERENCE]]
 
-population = [replicate_statistics(REFERENCE) for i in range(args.population)]
-population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
-
 measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
 
 for diff in measures_to_test:
     population = [replicate_statistics(REFERENCE) for i in range(args.population)]
+    population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
     print('––––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff)
     for i in range(args.iterations):
         print(i)
         population = genetic_step(population, partial(diff, REFERENCE), args.pcrossover, args.pmutation, args.mutationsd)
         # Stat fix
         population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
+    
+    population.sort(key=partial(diff, REFERENCE), reverse=True)
     all_populations.append(population)
-    print('population:', summary(population[0]))
-    print(population[0])
+    print('leading distribution summary:', summary(population[0]))
+    print('leading distribution:', population[0])
     print('reference:', summary(REFERENCE))
 
 for i in range(len(measures_to_test) + 1):
