@@ -5,6 +5,22 @@ from scipy.stats import pearsonr, ks_2samp
 from math import sqrt
 from functools import partial
 import dissimilarity as ds
+import argparse
+
+# Default number of iterations to run the genetic algorithm, if no argument is specified
+DEFAULT_ITERATIONS = 150
+DEFAULT_POPSIZE = 350
+
+parser = argparse.ArgumentParser()
+parser.add_argument('filename', help='specify the filename to read data from')
+parser.add_argument('-i', '--iterations', type=int, default=DEFAULT_ITERATIONS,
+    help='the number of iterations to run each genetic algorithm')
+parser.add_argument('-p', '--population', type=int, default=DEFAULT_POPSIZE,
+    help='size of population of genes for genetic algorithm')
+
+
+args = parser.parse_args()
+print(args.filename, args.iterations, args.population)
 
 def load_data(filename):
     with open(filename, 'r') as fin:
@@ -15,7 +31,7 @@ def load_data(filename):
         
     return np.array([x, y])
 
-REFERENCE = load_data('dataset1.txt')
+REFERENCE = load_data(args.filename)
 
 # Get summary statistics of a list of data
 def summary(data):
@@ -141,23 +157,20 @@ def genetic_step(population, fitness, p_crossover, p_mutation):
 
     return new_population
 
-ITERATIONS = 1
-POP_SIZE = 350
-
 # Plotting
 fig = plt.figure()
 
-all_populations = [REFERENCE]
+all_populations = [[REFERENCE]]
 
-population = [replicate_statistics(REFERENCE) for i in range(POP_SIZE)]
+population = [replicate_statistics(REFERENCE) for i in range(args.population)]
 population = [fit_summary_statistics_of_to(gene, REFERENCE) for gene in population]
 
 measures_to_test = (ds.data_diff, ds.skewness_diff, ds.kurt_diff, ds.power_diff)
 
 for diff in measures_to_test:
-    population = [replicate_statistics(REFERENCE) for i in range(POP_SIZE)]
+    population = [replicate_statistics(REFERENCE) for i in range(args.population)]
     print('––––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff)
-    for i in range(ITERATIONS):
+    for i in range(args.iterations):
         print(i)
         population = genetic_step(population, partial(diff, REFERENCE), 0.8, 0.01)
         # Stat fix
@@ -169,7 +182,7 @@ for diff in measures_to_test:
 
 for i in range(len(measures_to_test) + 1):
     ax = plt.subplot(2, 3, i + 1)
-    ax.scatter(all_populations[i][0], all_populations[i][1], s=5)
+    ax.scatter(all_populations[i][0][0], all_populations[i][0][1], s=5)
 
 plt.ioff()
 plt.show()
