@@ -151,11 +151,12 @@ def genetic_step(population, fitness, p_crossover, p_mutation, mutation_sd, verb
 
 def run_genetic(iterations, population_size, p_crossover, p_mutation, mutation_sd, measures_to_run, ref_distribution, verbose=False, starting_population=None):
     all_populations = [[ref_distribution]]
-    if starting_population:
-        population = starting_population
-    else:
-        population = [replicate_statistics(ref_distribution) for i in range(population_size)]
+    
     for diff_measure in measures_to_run:
+        if starting_population:
+            population = starting_population
+        else:
+            population = [replicate_statistics(ref_distribution) for i in range(population_size)]
         if verbose:
             print('––STARTING GENETIC FOR DISSIMILARITY MEASURE:', diff_measure)
 
