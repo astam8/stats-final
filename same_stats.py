@@ -10,7 +10,7 @@ import argparse
 # Default number of iterations to run the genetic algorithm, if no argument is specified
 DEFAULT_ITERATIONS = 125
 # Default population size for the genetic algorithm, if no argument is specified
-DEFAULT_POPSIZE = 400
+DEFAULT_POPSIZE = 300
 # Default probability of crossover for the genetic algorithm, if no argument is specified
 DEFAULT_PCROSSOVER = 0.7
 # Default probability of mutation for the genetic algorithm, if no argument is specified
