@@ -14,11 +14,6 @@ from itertools import product
 from time import perf_counter
 from functools import partial
 
-'''test_iterations = (10, 50, 150)
-test_population_sizes = (20, 50, 100, 200, 500)
-test_p_crossover = (0.5, 0.7, 0.9, 1)
-test_p_mutation = (0, 0.01, 0.05)
-mutation_sd = 0.25'''
 # Not testing changes in mutation standard deviation, since mutations are rare occurrences anyway
 
 test_iterations = (10,50)
