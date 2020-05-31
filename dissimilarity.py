@@ -1,13 +1,6 @@
 import numpy as np
 from scipy import stats
 
-""" time to define a ton of fitness functions. Fitness = dissimilarity
-Constraint: ALWAYS POSITIVE! don't forget this.
-
-Ordered data differentials -- dissimilarity(X_1, X_2) = |X_1 - X_2| + |Y_1 - Y_2|
-
-"""
-
 def data_diff(x, ref):
     return np.sum(np.abs(x - ref))
 
