@@ -8,11 +8,11 @@ import dissimilarity as ds
 import argparse
 
 # Default number of iterations to run the genetic algorithm, if no argument is specified
-DEFAULT_ITERATIONS = 150
+DEFAULT_ITERATIONS = 125
 # Default population size for the genetic algorithm, if no argument is specified
-DEFAULT_POPSIZE = 350
+DEFAULT_POPSIZE = 400
 # Default probability of crossover for the genetic algorithm, if no argument is specified
-DEFAULT_PCROSSOVER = 0.8
+DEFAULT_PCROSSOVER = 0.7
 # Default probability of mutation for the genetic algorithm, if no argument is specified
 DEFAULT_PMUTATION = 0.01
 # Default standard deviation for mutations for the genetic algorithm; increasing will increase the likelihood of large mutations
